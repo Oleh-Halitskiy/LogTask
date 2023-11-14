@@ -8,61 +8,26 @@ namespace LogTest.Core
     /// </summary>
     public class LogLine
     {
-        #region Private Fields
+        private string text;
+        private DateTime timeStamp;
 
-        #endregion
-
-        #region Constructors
+        public string Text { get => text; set => text = value; }
+        public DateTime TimeStamp { get => timeStamp; set => timeStamp = value; }
 
         public LogLine()
         {
-            this.Text = "";
+            text = "";
+            timeStamp = DateTime.Now;
         }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Return a formatted line
-        /// </summary>
-        /// <returns></returns>
-        public virtual string LineText()
+        public LogLine(string text, DateTime timeStamp)
         {
-            StringBuilder sb = new StringBuilder();
-
-            if (this.Text.Length > 0)
-            {
-                sb.Append(this.Text);
-                sb.Append(". ");
-            }
-
-            sb.Append(this.CreateLineText());
-
-            return sb.ToString();
+            this.text = text;
+            this.timeStamp = timeStamp;
         }
-
-        public virtual string CreateLineText()
+        public override string ToString()
         {
-            return "";
+            string timeStampString = timeStamp.ToString("yyyy-MM-dd HH:mm:ss:fff");
+            return $"{timeStamp}: {text}";
         }
-
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// The text to be display in logline
-        /// </summary>
-        public string Text { get; set; }
-
-        /// <summary>
-        /// The Timestamp is initialized when the log is added. Th
-        /// </summary>
-        public virtual DateTime Timestamp { get; set; }
-  
-
-        #endregion
     }
 }
