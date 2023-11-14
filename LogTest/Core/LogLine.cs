@@ -1,8 +1,8 @@
-﻿namespace LogTest
-{
-    using System;
-    using System.Text;
+﻿using System;
+using System.Text;
 
+namespace LogTest.Core
+{
     /// <summary>
     /// This is the object that the diff. loggers (filelogger, consolelogger etc.) will operate on. The LineText() method will be called to get the text (formatted) to log
     /// </summary>

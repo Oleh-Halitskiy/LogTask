@@ -1,12 +1,12 @@
-﻿namespace LogTest
-{
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Text;
-    using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
 
-    public class AsyncLog : ILog
+namespace LogTest.Core
+{
+    public class LogManager : ILog
     {
         private Thread _runThread;
         private List<LogLine> _lines = new List<LogLine>();
@@ -15,7 +15,7 @@
 
         private bool _exit;
 
-        public AsyncLog()
+        public LogManager()
         {
             if (!Directory.Exists(@"C:\LogTest")) 
                 Directory.CreateDirectory(@"C:\LogTest");
