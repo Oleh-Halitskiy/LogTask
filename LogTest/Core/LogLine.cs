@@ -27,7 +27,7 @@ namespace LogTest.Core
         public override string ToString()
         {
             string timeStampString = timeStamp.ToString("yyyy-MM-dd HH:mm:ss:fff");
-            return $"{timeStamp}: {text}";
+            return $"{timeStampString}: {text}";
         }
     }
 }
