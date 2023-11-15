@@ -3,112 +3,101 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using LogTest.Exceptions;
+using LogTest.Utils;
+using LogTest.Interfaces;
 
 namespace LogTest.Core
 {
     public class LogManager : ILog
     {
         private Thread _runThread;
-        private List<LogLine> _lines = new List<LogLine>();
+        private Queue<LogLine> _logQueue = new Queue<LogLine>();
+        private bool _acceptingNewLogs;
+        private DateTime startDate;
+        private string _currentDirectoryPath;
+        private string _currentLogPath;
 
-        private StreamWriter _writer; 
-
+        private IFileManager _fileManager;
+ 
         private bool _exit;
 
-        public LogManager()
+        public bool AcceptingNewLogs { get => _acceptingNewLogs; set => _acceptingNewLogs = value; }
+
+        public LogManager(string logDirectory)
         {
-            if (!Directory.Exists(@"C:\LogTest")) 
-                Directory.CreateDirectory(@"C:\LogTest");
+            _acceptingNewLogs = true;
+            _exit = true;
+            _fileManager = new FileManager();
+            startDate = DateTime.Now;
+            _currentDirectoryPath = logDirectory;
 
-            this._writer = File.AppendText(@"C:\LogTest\Log" + DateTime.Now.ToString("yyyyMMdd HHmmss fff") + ".log");
-            
-            this._writer.Write("Timestamp".PadRight(25, ' ') + "\t" + "Data".PadRight(15, ' ') + "\t" + Environment.NewLine);
+            CreateNewLogFile(startDate.ToString("yyyyMMdd HHmmss fff") + ".log");
 
-            this._writer.AutoFlush = true;
-
-            this._runThread = new Thread(this.MainLoop);
-            this._runThread.Start();
+            // run main loop in thread
+            _runThread = new Thread(MainLoop2);
+            _runThread.Start();
         }
 
-        private bool _QuitWithFlush = false;
-
-
-        DateTime _curDate = DateTime.Now;
-
-        private void MainLoop()
+        private void MainLoop2()
         {
-            while (!this._exit)
+            while (_exit)
             {
-                if (this._lines.Count > 0)
+                try
                 {
-                    int f = 0;
-                    List<LogLine> _handled = new List<LogLine>();
-
-                    foreach (LogLine logLine in this._lines)
+                    if (!_acceptingNewLogs && _logQueue.Count == 0)
                     {
-                        f++;
-
-                        if (f > 5)
-                            continue;
-                        
-                        if (!this._exit || this._QuitWithFlush)
-                        {
-                            _handled.Add(logLine);
-
-                            StringBuilder stringBuilder = new StringBuilder();
-
-                            if ((DateTime.Now - _curDate).Days != 0)
-                            {
-                                _curDate = DateTime.Now;
-
-                                this._writer = File.AppendText(@"C:\LogTest\Log" + DateTime.Now.ToString("yyyyMMdd HHmmss fff") + ".log");
-
-                                this._writer.Write("Timestamp".PadRight(25, ' ') + "\t" + "Data".PadRight(15, ' ') + "\t" + Environment.NewLine);
-
-                                stringBuilder.Append(Environment.NewLine);
-
-                                this._writer.Write(stringBuilder.ToString());
-
-                                this._writer.AutoFlush = true;
-                            }
-
-                            stringBuilder.Append(logLine.Timestamp.ToString("yyyy-MM-dd HH:mm:ss:fff"));
-                            stringBuilder.Append("\t");
-                            stringBuilder.Append(logLine.LineText());
-                            stringBuilder.Append("\t");
-
-                            stringBuilder.Append(Environment.NewLine);
-
-                            this._writer.Write(stringBuilder.ToString());
-                        }
+                        break;
                     }
-
-                    for (int y = 0; y < _handled.Count; y++)
+                    if (startDate.Day + 1 == DateTime.Now.Day)
                     {
-                        this._lines.Remove(_handled[y]);   
+                        startDate = DateTime.Now;
+                        CreateNewLogFile(startDate.ToString("yyyyMMdd HHmmss fff") + ".log");
                     }
-
-                    if (this._QuitWithFlush == true && this._lines.Count == 0) 
-                        this._exit = true;
-
-                    Thread.Sleep(50);
+                    if (_logQueue.Count > 0)
+                    {
+                        ProcessLog();
+                    }
                 }
+                catch (DirectoryNotFoundException ex)
+                {
+                    _fileManager.CreateFile("C:\\Users\\user\\Desktop\\Logger\\Logs\\", "exceptions.log");
+                }
+                Thread.Sleep(50);
             }
-        }
 
+        }
+        private void CreateNewLogFile(string fileName)
+        {
+            _fileManager.CreateFile(_currentDirectoryPath, fileName);
+            _currentLogPath = _currentDirectoryPath + fileName;
+        }
+        private void ProcessLog()
+        {
+            _fileManager.WriteToFile(_currentLogPath, _logQueue.Peek().ToString());
+            _logQueue.Dequeue();
+        }
         public void StopWithoutFlush()
         {
-            this._exit = true;
+            _exit = true;
         }
 
         public void StopWithFlush()
         {
-            this._QuitWithFlush = true;
+            _acceptingNewLogs = false;
         }
 
         public void Write(string text)
         {
-            this._lines.Add(new LogLine() { Text = text, Timestamp = DateTime.Now });
+            if (_acceptingNewLogs)
+            {
+                LogLine logLine = new LogLine(text, DateTime.Now);
+                _logQueue.Enqueue(logLine);
+            }
+            else
+            {
+                throw new LogNotAcceptedException("Log manager is stopped and not accepting new logs"); 
+            }
         }
     }
 }
