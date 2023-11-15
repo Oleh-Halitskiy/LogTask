@@ -17,12 +17,15 @@ namespace LogTest.Core
         private DateTime startDate;
         private string _currentDirectoryPath;
         private string _currentLogPath;
+        private string _crashLogPath;
 
         private IFileManager _fileManager;
  
         private bool _exit;
 
         public bool AcceptingNewLogs { get => _acceptingNewLogs; set => _acceptingNewLogs = value; }
+        public Queue<LogLine> LogQueue { get => _logQueue; set => _logQueue = value; }
+        public string CrashLogPath { get => _crashLogPath; set => _crashLogPath = value; }
 
         public LogManager(string logDirectory)
         {
@@ -59,14 +62,25 @@ namespace LogTest.Core
                         ProcessLog();
                     }
                 }
-                catch (DirectoryNotFoundException ex)
+                catch (Exception ex)
                 {
-                    _fileManager.CreateFile("C:\\Users\\user\\Desktop\\Logger\\Logs\\", "exceptions.log");
+                    HandleException(ex);
+                    break;
                 }
-                Thread.Sleep(50);
+                Thread.Sleep(1000);
             }
 
         }
+
+        private void HandleException(Exception ex)
+        {
+            var crashLogName = $"Exceptions{DateTime.Now.ToString("yyyyMMdd-HHmm")}.log";
+            _fileManager.CreateFile(_crashLogPath, crashLogName);
+            _fileManager.WriteToFile(_crashLogPath + crashLogName, $"Crash occured at {DateTime.Now}\n" +
+                                                                    $"Error: {ex.Message}\n" +
+                                                                    "\n");
+        }
+
         private void CreateNewLogFile(string fileName)
         {
             _fileManager.CreateFile(_currentDirectoryPath, fileName);
@@ -79,7 +93,7 @@ namespace LogTest.Core
         }
         public void StopWithoutFlush()
         {
-            _exit = true;
+            _exit = false;
         }
 
         public void StopWithFlush()
