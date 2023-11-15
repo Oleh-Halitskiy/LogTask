@@ -1,30 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
+using LogTest.Core;
+using LogTest.Interfaces;
+using LogTest.Utils;
 
 namespace LogUsers
 {
-    using System.Threading;
-
-    using LogTest;
-
     class Program
     {
         static void Main(string[] args)
         {
-            ILog  logger = new LogManager();
+
+            ILog  logger = new LogManager("C:\\Users\\user\\Desktop\\Logger\\Logs\\");
 
             for (int i = 0; i < 15; i++)
             {
                 logger.Write("Number with Flush: " + i.ToString());
+                Console.WriteLine("Writing to logger");
                 Thread.Sleep(50);
             }
 
             logger.StopWithFlush();
 
-            ILog logger2 = new LogManager();
+
+            /*
+            ILog logger2 = new LogManager("C:\\Users\\user\\Desktop\\Logger\\Logs");
 
             for (int i = 50; i > 0; i--)
             {
@@ -35,6 +35,7 @@ namespace LogUsers
             logger2.StopWithoutFlush();
 
             Console.ReadLine();
+            */
         }
     }
 }
