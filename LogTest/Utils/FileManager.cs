@@ -1,4 +1,5 @@
 ﻿using LogTest.Interfaces;
+using System.Collections.Generic;
 using System.IO;
 
 namespace LogTest.Utils
@@ -13,14 +14,16 @@ namespace LogTest.Utils
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            File.Create(filePath);
+            using (File.Create(filePath)) { }
         }
 
         public void WriteToFile(string path, string content)
         {
             if (File.Exists(path))
             {
-                File.WriteAllText(path, content);
+                var contentList = new List<string>();
+                contentList.Add(content);
+                File.AppendAllLines(path, contentList);
             }
             else
             {
