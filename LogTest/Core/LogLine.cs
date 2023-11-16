@@ -8,26 +8,26 @@ namespace LogTest.Core
     /// </summary>
     public class LogLine : ILogLine
     {
-        private string text;
-        private DateTime timeStamp;
+        private string _text;
+        private DateTime _timeStamp;
 
-        public string Text { get => text; set => text = value; }
-        public DateTime TimeStamp { get => timeStamp; set => timeStamp = value; }
+        public string Text { get => _text; set => _text = value; }
+        public DateTime TimeStamp { get => _timeStamp; set => _timeStamp = value; }
 
         public LogLine()
         {
-            text = "";
-            timeStamp = DateTime.Now;
+            _text = "";
+            _timeStamp = DateTime.Now;
         }
         public LogLine(string text, DateTime timeStamp)
         {
-            this.text = text;
-            this.timeStamp = timeStamp;
+            _text = text;
+            _timeStamp = timeStamp;
         }
         public override string ToString()
         {
-            string timeStampString = timeStamp.ToString("yyyy-MM-dd HH:mm:ss:fff");
-            return $"{timeStampString}: {text}";
+            string timeStampString = _timeStamp.ToString("yyyy-MM-dd HH:mm:ss:fff");
+            return $"{timeStampString}: {_text}";
         }
     }
 }
