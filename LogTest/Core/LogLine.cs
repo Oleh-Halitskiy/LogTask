@@ -1,12 +1,12 @@
-﻿using System;
-using System.Text;
+﻿using LogTest.Interfaces;
+using System;
 
 namespace LogTest.Core
 {
     /// <summary>
     /// This is the object that the diff. loggers (filelogger, consolelogger etc.) will operate on. The LineText() method will be called to get the text (formatted) to log
     /// </summary>
-    public class LogLine
+    public class LogLine : ILogLine
     {
         private string text;
         private DateTime timeStamp;

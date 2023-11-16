@@ -21,8 +21,7 @@ namespace LogTest.Utils
         {
             if (File.Exists(path))
             {
-                var contentList = new List<string>();
-                contentList.Add(content);
+                var contentList = new List<string> { content };
                 File.AppendAllLines(path, contentList);
             }
             else
