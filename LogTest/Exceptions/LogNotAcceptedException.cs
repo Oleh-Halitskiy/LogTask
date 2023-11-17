@@ -2,7 +2,7 @@
 
 namespace LogTest.Exceptions
 {
-    internal class LogNotAcceptedException : Exception
+    public class LogNotAcceptedException : Exception
     {
         public LogNotAcceptedException()
         {
