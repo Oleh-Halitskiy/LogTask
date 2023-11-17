@@ -104,7 +104,7 @@ namespace LogTest.Core
                     HandleException(ex);
                     break;
                 }
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
             }
 
         }
