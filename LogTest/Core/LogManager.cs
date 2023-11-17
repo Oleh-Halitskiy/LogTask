@@ -90,7 +90,7 @@ namespace LogTest.Core
                     {
                         break;
                     }
-                    if (_currentDate.Day + 1 == DateTime.Now.Day)
+                    if (_currentDate.Day + 1 == _clock.Now.Day)
                     {
                         _currentDate = _clock.Now;
                         CreateNewLogFile(_currentDate.ToString(_stringFormat) + ".log");
