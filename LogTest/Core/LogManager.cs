@@ -23,6 +23,8 @@ namespace LogTest.Core
         private string _crashLogPath;
 
         private readonly string _header = "Timestamp".PadRight(25, ' ') + "\t" + "Data".PadRight(15, ' ');
+        private readonly IClock _clock;
+        private const string _stringFormat = "yyyyMMdd HHmmss fff";
 
         public bool AcceptingNewLogs { get => _acceptingNewLogs; }
         public Queue<ILogLine> LogQueue { get => _logQueue; }
@@ -35,15 +37,21 @@ namespace LogTest.Core
 
             _fileManager = new FileManager();
             _logQueue = new Queue<ILogLine>();
+            _clock = new SystemClock();
 
-            _currentDate = DateTime.Now;
+            _currentDate = _clock.Now;
             _currentDirectoryPath = logDirectory;
 
-            CreateNewLogFile(_currentDate.ToString("yyyyMMdd HHmmss fff") + ".log");
+            CreateNewLogFile(_currentDate.ToString(_stringFormat) + ".log");
 
             // run main loop in thread
             _runThread = new Thread(MainLoop);
             _runThread.Start();
+        }
+
+        public LogManager(string logDirectory, IClock clock):this(logDirectory)
+        {
+            _clock = clock;
         }
 
         public void Stop(bool stopWithFlush = true)
@@ -84,8 +92,8 @@ namespace LogTest.Core
                     }
                     if (_currentDate.Day + 1 == DateTime.Now.Day)
                     {
-                        _currentDate = DateTime.Now;
-                        CreateNewLogFile(_currentDate.ToString("yyyyMMdd HHmmss fff") + ".log");
+                        _currentDate = _clock.Now;
+                        CreateNewLogFile(_currentDate.ToString(_stringFormat) + ".log");
                     }
                     if (_logQueue.Count > 0)
                     {
@@ -104,7 +112,7 @@ namespace LogTest.Core
 
         private void HandleException(Exception ex)
         {
-            var crashLogName = $"Exceptions{DateTime.Now.ToString("yyyyMMdd-HHmm")}.log";
+            var crashLogName = $"Exceptions{DateTime.Now.ToString(_stringFormat)}.log";
             _fileManager.CreateFile(_crashLogPath, crashLogName);
 
             _fileManager.WriteToFile(_crashLogPath + crashLogName, $"Crash occured at {DateTime.Now}\n" +
