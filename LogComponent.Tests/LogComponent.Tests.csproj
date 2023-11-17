@@ -79,6 +79,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileManagerTests.cs" />
+    <Compile Include="LogLineTests.cs" />
+    <Compile Include="LogManagerTests.cs" />
+    <Compile Include="Mocks\MockClock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +91,12 @@
   <ItemGroup>
     <Analyzer Include="..\packages\xunit.analyzers.1.4.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
     <Analyzer Include="..\packages\xunit.analyzers.1.4.0\analyzers\dotnet\cs\xunit.analyzers.fixes.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LogTest\LogComponent.csproj">
+      <Project>{EE0CC7D7-A1A0-4A16-80E5-8B80B480EB47}</Project>
+      <Name>LogComponent</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
