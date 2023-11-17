@@ -1,8 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using LogTest.Core;
 using LogTest.Interfaces;
-using LogTest.Utils;
 
 namespace LogUsers
 {
@@ -11,31 +11,28 @@ namespace LogUsers
         static void Main(string[] args)
         {
 
-            ILog  logger = new LogManager("C:\\Users\\user\\Desktop\\Logger\\Logs\\");
+            var currentDirectory = Environment.CurrentDirectory + @"\Logs\";
+            ILogManager logger = new LogManager(currentDirectory);
+            logger.CrashLogPath = currentDirectory;
 
             for (int i = 0; i < 15; i++)
             {
-                logger.Write("Number with Flush: " + i.ToString());
-                Console.WriteLine("Writing to logger");
-                Thread.Sleep(50);
+                logger.WriteLog("Number with Flush: " + i.ToString());
             }
 
-            logger.StopWithFlush();
+            logger.Stop();
 
-
-            /*
-            ILog logger2 = new LogManager("C:\\Users\\user\\Desktop\\Logger\\Logs");
+            ILogManager logger2 = new LogManager(currentDirectory);
 
             for (int i = 50; i > 0; i--)
             {
-                logger2.Write("Number with No flush: " + i.ToString());
+                logger2.WriteLog("Number with No flush: " + i.ToString());
                 Thread.Sleep(20);
             }
 
-            logger2.StopWithoutFlush();
+            logger2.Stop(false);
 
             Console.ReadLine();
-            */
         }
     }
 }
