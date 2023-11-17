@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
 using LogTest.Exceptions;
 using LogTest.Utils;
@@ -23,12 +21,13 @@ namespace LogTest.Core
         private string _crashLogPath;
 
         private readonly string _header = "Timestamp".PadRight(25, ' ') + "\t" + "Data".PadRight(15, ' ');
-        private readonly IClock _clock;
+        private readonly IClock _clock = new SystemClock();
         private const string _stringFormat = "yyyyMMdd HHmmss fff";
 
         public bool AcceptingNewLogs { get => _acceptingNewLogs; }
         public Queue<ILogLine> LogQueue { get => _logQueue; }
         public string CrashLogPath { get => _crashLogPath; set => _crashLogPath = value; }
+        public string CurrentLogPath { get => _currentLogPath; set => _currentLogPath = value; }
 
         public LogManager(string logDirectory)
         {
@@ -37,7 +36,6 @@ namespace LogTest.Core
 
             _fileManager = new FileManager();
             _logQueue = new Queue<ILogLine>();
-            _clock = new SystemClock();
 
             _currentDate = _clock.Now;
             _currentDirectoryPath = logDirectory;
@@ -52,6 +50,7 @@ namespace LogTest.Core
         public LogManager(string logDirectory, IClock clock):this(logDirectory)
         {
             _clock = clock;
+            _currentDate = clock.Now;                                                                                                  
         }
 
         public void Stop(bool stopWithFlush = true)
