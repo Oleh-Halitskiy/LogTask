@@ -116,6 +116,7 @@ namespace LogComponent.Tests
             Assert.Throws<LogNotAcceptedException>(() => logManager.WriteLog("Something"));
             Assert.False(logManager.AcceptingNewLogs);
         }
+
         [Fact]
         public void HandleException_ShouldSetCrashLogToLogPathByDefault()
         {
@@ -131,6 +132,7 @@ namespace LogComponent.Tests
 
             Assert.Equal(logManager.CrashLogPath, _tempDirectory);
         }
+
         [Fact]
         public void HandleException_NotOverridingSetCrashLogPath()
         {
