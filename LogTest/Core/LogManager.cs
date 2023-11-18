@@ -29,11 +29,11 @@ namespace LogTest.Core
         public bool AcceptingNewLogs { get => _acceptingNewLogs; }
         /// <inheritdoc />
         public Queue<ILogLine> LogQueue { get => _logQueue; }
-        /// <inheritdoc />
-        public string CrashLogPath { get => _crashLogPath; set => _crashLogPath = value; }
         /// <summary>
         /// Path where crash log file will be created in case of erros, set to CurrentLogPath by default when processing exception
         /// </summary>
+        public string CrashLogPath { get => _crashLogPath; set => _crashLogPath = value; }
+        /// <inheritdoc />
         public string CurrentLogPath { get => _currentLogPath; set => _currentLogPath = value; }
 
         /// <summary>
