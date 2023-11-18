@@ -116,5 +116,36 @@ namespace LogComponent.Tests
             Assert.Throws<LogNotAcceptedException>(() => logManager.WriteLog("Something"));
             Assert.False(logManager.AcceptingNewLogs);
         }
+        [Fact]
+        public void HandleException_ShouldSetCrashLogToLogPathByDefault()
+        {
+            
+            var logManager = new LogManager(_tempDirectory);
+            logManager.WriteLog("TestWrite");
+
+            File.Delete(logManager.CurrentLogPath);
+
+            logManager.Stop();
+
+            Thread.Sleep(300);
+
+            Assert.Equal(logManager.CrashLogPath, _tempDirectory);
+        }
+        [Fact]
+        public void HandleException_NotOverridingSetCrashLogPath()
+        {
+            var logManager = new LogManager(_tempDirectory);
+            logManager.CrashLogPath = _tempDirectory;
+
+            logManager.WriteLog("TestWrite");
+
+            File.Delete(logManager.CurrentLogPath);
+
+            logManager.Stop();
+
+            Thread.Sleep(300);
+
+            Assert.Equal(logManager.CrashLogPath, _tempDirectory);
+        }
     }
 }
