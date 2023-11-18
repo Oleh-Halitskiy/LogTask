@@ -4,8 +4,12 @@ using System.IO;
 
 namespace LogTest.Utils
 {
+    /// <summary>
+    /// Utility class that will allow us to manage files
+    /// </summary>
     public class FileManager : IFileManager
     {
+        /// <inheritdoc />
         public void CreateFile(string directoryPath, string fileName)
         {
             string filePath = Path.Combine(directoryPath, fileName);
@@ -17,6 +21,7 @@ namespace LogTest.Utils
             using (File.Create(filePath)) { }
         }
 
+        /// <inheritdoc />
         public void WriteToFile(string path, string content)
         {
             if (File.Exists(path))

@@ -2,6 +2,9 @@
 
 namespace LogTest.Exceptions
 {
+    /// <summary>
+    /// Exception class to throw custom exception when LogManager can't accept new logs after we stop it
+    /// </summary>
     public class LogNotAcceptedException : Exception
     {
         public LogNotAcceptedException()

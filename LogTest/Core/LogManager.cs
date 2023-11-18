@@ -7,6 +7,7 @@ using LogTest.Interfaces;
 
 namespace LogTest.Core
 {
+
     public class LogManager : ILogManager
     {
         private Thread _runThread;
@@ -24,11 +25,21 @@ namespace LogTest.Core
         private readonly IClock _clock = new SystemClock();
         private const string _stringFormat = "yyyyMMdd HHmmss fff";
 
+        /// <inheritdoc />
         public bool AcceptingNewLogs { get => _acceptingNewLogs; }
+        /// <inheritdoc />
         public Queue<ILogLine> LogQueue { get => _logQueue; }
+        /// <inheritdoc />
         public string CrashLogPath { get => _crashLogPath; set => _crashLogPath = value; }
+        /// <summary>
+        /// Path where crash log file will be created in case of erros, set to CurrentLogPath by default when processing exception
+        /// </summary>
         public string CurrentLogPath { get => _currentLogPath; set => _currentLogPath = value; }
 
+        /// <summary>
+        /// Creates new LogManeger
+        /// </summary>
+        /// <param name="logDirectory">Directory where to create logs</param>
         public LogManager(string logDirectory)
         {
             _acceptingNewLogs = true;
@@ -47,12 +58,18 @@ namespace LogTest.Core
             _runThread.Start();
         }
 
+        /// <summary>
+        /// Optional constructor to set custom IClock
+        /// </summary>
+        /// <param name="logDirectory">Directory where to create logs</param>
+        /// <param name="clock">Custom clock</param>
         public LogManager(string logDirectory, IClock clock):this(logDirectory)
         {
             _clock = clock;
             _currentDate = clock.Now;                                                                                                  
         }
 
+        /// <inheritdoc />
         public void Stop(bool stopWithFlush = true)
         {
             if (stopWithFlush)
@@ -66,6 +83,7 @@ namespace LogTest.Core
             }
         }
 
+        /// <inheritdoc />
         public void WriteLog(string text)
         {
             if (_acceptingNewLogs)
@@ -79,6 +97,9 @@ namespace LogTest.Core
             }
         }
 
+        /// <summary>
+        /// Main loop that performs all the checking and processing of logs
+        /// </summary>
         private void MainLoop()
         {
             while (_exit)
@@ -109,9 +130,15 @@ namespace LogTest.Core
 
         }
 
+        /// <summary>
+        /// Function to handle exception in main loop
+        /// </summary>
+        /// <param name="ex">Exception that'll be processed</param>
         private void HandleException(Exception ex)
         {
+            _crashLogPath = _crashLogPath ?? _currentDirectoryPath; // save logs by default to the logs directory
             var crashLogName = $"Exceptions{DateTime.Now.ToString(_stringFormat)}.log";
+
             _fileManager.CreateFile(_crashLogPath, crashLogName);
 
             _fileManager.WriteToFile(_crashLogPath + crashLogName, $"Crash occured at {DateTime.Now}\n" +
@@ -119,6 +146,10 @@ namespace LogTest.Core
                                                                    "\n");
         }
 
+        /// <summary>
+        /// Creating new log file, used for when we need to have new file when passing midnight or in general when we need file for logs
+        /// </summary>
+        /// <param name="fileName"></param>
         private void CreateNewLogFile(string fileName)
         {
             _fileManager.CreateFile(_currentDirectoryPath, fileName);
@@ -126,6 +157,9 @@ namespace LogTest.Core
             _fileManager.WriteToFile(_currentLogPath, _header);
         }
 
+        /// <summary>
+        /// Actually write logs to the file and removes it from the queue
+        /// </summary>
         private void ProcessLog()
         {
             _fileManager.WriteToFile(_currentLogPath, _logQueue.Peek().ToString());
