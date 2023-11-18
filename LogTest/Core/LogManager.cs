@@ -125,7 +125,7 @@ namespace LogTest.Core
                     HandleException(ex);
                     break;
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(100); //artificial sleep, no functional purpose
             }
 
         }
