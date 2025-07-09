@@ -1,15 +1,11 @@
 ﻿using LogTest.Interfaces;
-using System.Collections.Generic;
+using System;
 using System.IO;
 
 namespace LogTest.Utils
 {
-    /// <summary>
-    /// Utility class that will allow us to manage files
-    /// </summary>
     public class FileManager : IFileManager
     {
-        /// <inheritdoc />
         public void CreateFile(string directoryPath, string fileName)
         {
             string filePath = Path.Combine(directoryPath, fileName);
@@ -18,16 +14,14 @@ namespace LogTest.Utils
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            using (File.Create(filePath)) { }
+            File.Create(filePath).Close();
         }
-
-        /// <inheritdoc />
-        public void WriteToFile(string path, string content)
+        
+        public void AppendLine(string path, string content)
         {
             if (File.Exists(path))
             {
-                var contentList = new List<string> { content };
-                File.AppendAllLines(path, contentList);
+                File.AppendAllText(path, content + Environment.NewLine);
             }
             else
             {

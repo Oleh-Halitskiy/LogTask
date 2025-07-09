@@ -10,36 +10,22 @@ namespace LogTest.Core
 
     public class LogManager : ILogManager
     {
-        private Thread _runThread;
-        private Queue<ILogLine> _logQueue;
         private DateTime _currentDate;
-        private IFileManager _fileManager;
-
         private bool _acceptingNewLogs;
         private bool _exit;
-        private string _currentDirectoryPath;
         private string _currentLogPath;
         private string _crashLogPath;
-
+        
+        private readonly IFileManager _fileManager;
+        private readonly Queue<ILogLine> _logQueue;
+        private readonly string _currentDirectoryPath;
         private readonly string _header = "Timestamp".PadRight(25, ' ') + "\t" + "Data".PadRight(15, ' ');
         private readonly IClock _clock = new SystemClock();
         private const string _stringFormat = "yyyyMMdd HHmmss fff";
-
-        /// <inheritdoc />
-        public bool AcceptingNewLogs { get => _acceptingNewLogs; }
-        /// <inheritdoc />
-        public Queue<ILogLine> LogQueue { get => _logQueue; }
-        /// <summary>
-        /// Path where crash log file will be created in case of erros, set to CurrentLogPath by default when processing exception
-        /// </summary>
+        
         public string CrashLogPath { get => _crashLogPath; set => _crashLogPath = value; }
-        /// <inheritdoc />
-        public string CurrentLogPath { get => _currentLogPath; set => _currentLogPath = value; }
+        public string CurrentLogPath => _currentLogPath;
 
-        /// <summary>
-        /// Creates new LogManeger
-        /// </summary>
-        /// <param name="logDirectory">Directory where to create logs</param>
         public LogManager(string logDirectory)
         {
             _acceptingNewLogs = true;
@@ -50,40 +36,34 @@ namespace LogTest.Core
 
             _currentDate = _clock.Now;
             _currentDirectoryPath = logDirectory;
-
-            CreateNewLogFile(_currentDate.ToString(_stringFormat) + ".log");
-
-            // run main loop in thread
-            _runThread = new Thread(MainLoop);
-            _runThread.Start();
+            _currentLogPath = string.Empty;
+            
+            _crashLogPath = _currentDirectoryPath;
+            
+            var runThread = new Thread(MainLoop)
+            {
+                IsBackground = true
+            };
+            runThread.Start();
         }
-
-        /// <summary>
-        /// Optional constructor to set custom IClock
-        /// </summary>
-        /// <param name="logDirectory">Directory where to create logs</param>
-        /// <param name="clock">Custom clock</param>
+        
         public LogManager(string logDirectory, IClock clock):this(logDirectory)
         {
             _clock = clock;
             _currentDate = clock.Now;                                                                                                  
         }
-
-        /// <inheritdoc />
-        public void Stop(bool stopWithFlush = true)
+        
+        public void Stop()
         {
-            if (stopWithFlush)
-            {
-                _acceptingNewLogs = false;
-            }
-            else
-            {
-                _exit = false;
-                _acceptingNewLogs = false;
-            }
+           _acceptingNewLogs = false;
+           _exit = false;
+        }
+        
+        public void StopWithFlush()
+        {
+            _acceptingNewLogs = false;
         }
 
-        /// <inheritdoc />
         public void WriteLog(string text)
         {
             if (_acceptingNewLogs)
@@ -96,10 +76,7 @@ namespace LogTest.Core
                 throw new LogNotAcceptedException("Log manager is stopped and not accepting new logs");
             }
         }
-
-        /// <summary>
-        /// Main loop that performs all the checking and processing of logs
-        /// </summary>
+        
         private void MainLoop()
         {
             while (_exit)
@@ -113,7 +90,7 @@ namespace LogTest.Core
                     if (_currentDate.Day + 1 == _clock.Now.Day)
                     {
                         _currentDate = _clock.Now;
-                        CreateNewLogFile(_currentDate.ToString(_stringFormat) + ".log");
+                        _currentLogPath = string.Empty;
                     }
                     if (_logQueue.Count > 0)
                     {
@@ -125,45 +102,39 @@ namespace LogTest.Core
                     HandleException(ex);
                     break;
                 }
-                Thread.Sleep(100); //artificial sleep, no functional purpose
             }
 
         }
-
-        /// <summary>
-        /// Function to handle exception in main loop
-        /// </summary>
-        /// <param name="ex">Exception that'll be processed</param>
+        
         private void HandleException(Exception ex)
         {
-            _crashLogPath = _crashLogPath ?? _currentDirectoryPath; // save logs by default to the logs directory
             var crashLogName = $"Exceptions{DateTime.Now.ToString(_stringFormat)}.log";
-
+            
             _fileManager.CreateFile(_crashLogPath, crashLogName);
-
-            _fileManager.WriteToFile(_crashLogPath + crashLogName, $"Crash occured at {DateTime.Now}\n" +
+            _fileManager.AppendLine(_crashLogPath + crashLogName, $"Crash occured at {DateTime.Now}\n" +
                                                                    $"Error: {ex.Message}\n" +
                                                                    "\n");
         }
-
-        /// <summary>
-        /// Creating new log file, used for when we need to have new file when passing midnight or in general when we need file for logs
-        /// </summary>
-        /// <param name="fileName"></param>
+        
         private void CreateNewLogFile(string fileName)
         {
             _fileManager.CreateFile(_currentDirectoryPath, fileName);
             _currentLogPath = _currentDirectoryPath + fileName;
-            _fileManager.WriteToFile(_currentLogPath, _header);
+            _fileManager.AppendLine(_currentLogPath, _header);
         }
-
-        /// <summary>
-        /// Actually write logs to the file and removes it from the queue
-        /// </summary>
+        
         private void ProcessLog()
         {
-            _fileManager.WriteToFile(_currentLogPath, _logQueue.Peek().ToString());
-            _logQueue.Dequeue();
+            if (_currentLogPath == string.Empty)
+            {
+                CreateNewLogFile(_currentDate.ToString(_stringFormat) + ".log");
+            }
+            object lockObject = new object();
+            lock (lockObject)
+            {
+                _fileManager.AppendLine(_currentLogPath, _logQueue.Peek().ToString());
+                _logQueue.Dequeue();
+            }
         }
     }
 }

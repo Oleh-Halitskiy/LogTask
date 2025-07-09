@@ -38,7 +38,7 @@ namespace LogComponent.Tests
             try
             {
                 fileManager.CreateFile(directoryPath, fileName);
-                fileManager.WriteToFile(filePath, content);
+                fileManager.AppendLine(filePath, content);
 
                 var fileContent = File.ReadAllText(filePath);
                 Assert.Contains(content, fileContent);
@@ -58,7 +58,7 @@ namespace LogComponent.Tests
             var filePath = Path.Combine(nonExistentPath, fileName);
             var content = "Hello, world!";
 
-            Assert.Throws<DirectoryNotFoundException>(() => fileManager.WriteToFile(filePath, content));
+            Assert.Throws<DirectoryNotFoundException>(() => fileManager.AppendLine(filePath, content));
         }
 
         [Fact]
